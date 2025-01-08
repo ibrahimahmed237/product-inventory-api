@@ -26,4 +26,28 @@ const login = asyncHandler(async (req, res, next) => {
   });
 });
 
-module.exports = { login };
+const signup = asyncHandler(async (req, res, next) => {
+  const { email, password, role } = req.body;
+  
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return next(new ApiError('Email already in use', 400));
+  }
+
+  const user = await User.create({ email, password, role });
+  const token = generateToken(user._id);
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role 
+      }
+    }
+  });
+});
+
+module.exports = { login, signup };

@@ -7,6 +7,8 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const compression = require('compression');
 const ApiError = require('./utils/ApiError');
+const authRouter = require('./routes/auth.routes');
+const productRouter = require('./routes/product.routes');
 
 const app = express();
 
@@ -36,8 +38,8 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Routes
-app.use('/api/v1/auth', require('./routes/auth.routes'));
-app.use('/api/v1/products', require('./routes/product.routes'));
+app.use('/api/auth', authRouter);
+app.use('/api/products', productRouter);
 
 // Handle undefined routes
 app.all('*', (req, res, next) => {
@@ -46,6 +48,8 @@ app.all('*', (req, res, next) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
+  console.log("ERROR: ", err);
+  
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 

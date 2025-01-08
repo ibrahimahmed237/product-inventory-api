@@ -8,7 +8,10 @@ const validate = (req, res, next) => {
       field: error.path,
       message: error.msg
     }));
-    return next(new ApiError('Validation Error', 400, errorMessages));
+    console.log("errorMessages", errorMessages);
+    let message = errorMessages.map(error => error.message).join(', ') || 'Validation Error';
+
+    return next(new ApiError(message, 400, errorMessages));
   }
   next();
 };
@@ -110,6 +113,25 @@ const authValidationRules = {
       .withMessage('Password is required')
       .isLength({ min: 6 })
       .withMessage('Password must be at least 6 characters long')
+  ],
+  signup: [
+    body('email')
+      .trim()
+      .notEmpty()
+      .withMessage('Email is required')
+      .isEmail()
+      .withMessage('Please provide a valid email'),
+    
+    body('password')
+      .notEmpty()
+      .withMessage('Password is required')
+      .isLength({ min: 6 })
+      .withMessage('Password must be at least 6 characters long'),
+    
+    body('role')
+      .optional()
+      .isIn(['user', 'admin'])
+      .withMessage('Role must be either user or admin')
   ]
 };
 

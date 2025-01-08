@@ -31,8 +31,6 @@ const getPriceRangeProducts = async (page = 1) => {
     .skip(skip)
     .limit(limit)
     .lean()
-    .cache({ key: `price-range-${page}`, time: 300 }); // Cache for 5 minutes
-
   return products;
 };
 
@@ -47,8 +45,6 @@ const getCategoryProducts = async (category, page = 1) => {
     .skip(skip)
     .limit(limit)
     .lean()
-    .cache({ key: `category-${category}-${page}`, time: 300 }); // Cache for 5 minutes
-
   return products;
 };
 

@@ -2,6 +2,7 @@ const Product = require('../models/product.model');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { cacheMiddleware } = require('../utils/queryOptimization');
+const mongoose = require('mongoose');
 
 // POST /products
 const createProduct = asyncHandler(async (req, res) => {
@@ -21,7 +22,7 @@ const createProduct = asyncHandler(async (req, res) => {
 // GET /products
 const getProducts = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
-  const limit = 10; 
+  const limit = parseInt(req.query.limit, 10) || 10;
   const skip = (page - 1) * limit;
 
   // Get total count for pagination
@@ -33,8 +34,7 @@ const getProducts = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
-    .lean()
-    .cache({ key: `products-page-${page}`, time: 300 });
+    .lean();
 
   res.status(200).json({
     status: 'success',
@@ -51,6 +51,10 @@ const getProducts = asyncHandler(async (req, res) => {
 
 // GET /products/:id
 const getProduct = asyncHandler(async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return next(new ApiError('Invalid product ID', 400));
+  }
+
   const product = await Product.findById(req.params.id)
     .select('name category price quantity')
     .lean();
@@ -67,6 +71,10 @@ const getProduct = asyncHandler(async (req, res, next) => {
 
 // PUT /products/:id
 const updateProduct = asyncHandler(async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return next(new ApiError('Invalid product ID', 400));
+  }
+
   const product = await Product.findByIdAndUpdate(
     req.params.id,
     {
@@ -93,6 +101,10 @@ const updateProduct = asyncHandler(async (req, res, next) => {
 
 // DELETE /products/:id
 const deleteProduct = asyncHandler(async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return next(new ApiError('Invalid product ID', 400));
+  }
+
   const product = await Product.findByIdAndDelete(req.params.id);
 
   if (!product) {
